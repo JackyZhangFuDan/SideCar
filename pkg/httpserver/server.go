@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -32,5 +33,12 @@ func Run() {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
+	//w.Write([]byte("hello from Jacky"))
 
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.Write([]byte("error when reading body"))
+		return
+	}
+	w.Write(body)
 }

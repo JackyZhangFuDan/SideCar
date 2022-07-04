@@ -7,6 +7,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/jackyzhangfudan/sidecar/pkg/httpserver"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-
+		startServer()
 	},
 }
 
@@ -40,5 +41,12 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+/*
+start the http server
+*/
+func startServer() {
+	httpserver.Run()
 }

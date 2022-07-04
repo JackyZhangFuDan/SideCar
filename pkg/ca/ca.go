@@ -37,9 +37,8 @@ func (ca *CertificateAuthority) load() {
 
 /*
 sign a csr
-x509.CreateCertificate(rand io.Reader, template *x509.Certificate, parent *x509.Certificate, pub any, priv any) ([]byte, error)
 */
-func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (Certificate, error) {
+func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (*cx509.Certificate, error) {
 	cx509CSR := csr.toCX509CSR(nil)
 
 	mathRand.Seed(time.Now().UnixNano())
@@ -67,7 +66,7 @@ func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (Certif
 		log.Fatal("parse the cx509 certificate fail")
 	}
 
-	return res
+	return res, err
 }
 
 /*
