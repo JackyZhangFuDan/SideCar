@@ -23,7 +23,8 @@ func Run() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
-	mux.HandleFunc("/csr", signCsr)
+	mux.HandleFunc("/csr-template", getCsrTemplateHandler)
+	mux.HandleFunc("/csr", signCsrHandler)
 	server = &http.Server{
 		Addr:    ":8111",
 		Handler: mux,
@@ -38,8 +39,6 @@ func Run() {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	//w.Write([]byte("hello from Jacky"))
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.Write([]byte("error when reading body"))
@@ -48,7 +47,37 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-func signCsr(w http.ResponseWriter, r *http.Request) {
+func getCsrTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	csr := ca.CertificateSigningRequest{
+		SubjectCountry:            []string{"China", "US"},
+		SubjectOrganization:       []string{"Qinghua", "Beida"},
+		SubjectOrganizationalUnit: []string{"ComputerScience", "Mathematics"},
+		SubjectProvince:           []string{"Shanghai"},
+		SubjectLocality:           []string{"上海"},
+
+		PublicKeyAlg:       1,
+		SignatureAlgorithm: 4,
+		SubjectCommonName:  "www.fudan.edu.cn",
+		EmailAddresses:     []string{"ex@example.com"},
+	}
+
+	csrBytes, err := json.Marshal(csr)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "application/json")
+	w.Write(csrBytes)
+}
+
+func signCsrHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -67,6 +96,11 @@ func signCsr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go signCsrRoutine(w, csr)
+
+}
+
+func signCsrRoutine(w http.ResponseWriter, csr *ca.CertificateSigningRequest) {
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "received")
 }
