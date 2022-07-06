@@ -12,11 +12,14 @@ import (
 	"math/big"
 	mathRand "math/rand"
 	"time"
+
+	"github.com/youmark/pkcs8"
 )
 
 const (
-	rsaPrivateKeyLocation string = "cert\\private\\ca.private.key"
+	rsaPrivateKeyLocation string = "cert/private/ca.private.key"
 	rsaPrivateKeyPassword string = "123456"
+	rootCALocation        string = "cert/ca/root.crt"
 )
 
 var CA CertificateAuthority
@@ -32,10 +35,10 @@ type CertificateAuthority struct {
 }
 
 /*
-load ca data
+从磁盘加载根证书和私钥信息
 */
 func (ca *CertificateAuthority) load() {
-	//TODO
+	//加载 rootCA 的 private key
 	bytes, err := ioutil.ReadFile(rsaPrivateKeyLocation)
 	if err != nil {
 		panic("can't load ca private key")
@@ -44,22 +47,29 @@ func (ca *CertificateAuthority) load() {
 	if pemBlocks.Type != "ENCRYPTED PRIVATE KEY" {
 		panic("ca private key type should be ENCRYPTED")
 	}
-	pemBytes, err := cx509.DecryptPEMBlock(pemBlocks, []byte(rsaPrivateKeyPassword))
+	data, err := pkcs8.ParsePKCS8PrivateKeyRSA(pemBlocks.Bytes, []byte(rsaPrivateKeyPassword)) //need package pkcs8 to parse
 	if err != nil {
-		panic("decrept private key pem block fail")
+		panic("can't parse private key bytes via pkcs8")
 	}
-	privateKey, err := cx509.ParsePKCS1PrivateKey(pemBytes)
+	ca.PrivateKey = data
+	//加载 rootCA
+	rootCABytes, err := ioutil.ReadFile(rootCALocation)
 	if err != nil {
-		panic("parse private key pem bytes fail")
+		panic("can't load root ca")
 	}
-	ca.PrivateKey = privateKey
-
+	pemBlocks, _ = pem.Decode(rootCABytes)
+	rootCA, err := cx509.ParseCertificate(pemBlocks.Bytes)
+	if err != nil {
+		panic("can't parse root ca")
+	}
+	ca.RootCA = *rootCA
 }
 
 /*
-sign a csr
+用根证书签署一个证书签发请求CSR。CSR是以我自己的Struct表达的
 */
 func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (*cx509.Certificate, error) {
+
 	cx509CSR := csr.toCX509CSR(nil)
 
 	mathRand.Seed(time.Now().UnixNano())
@@ -91,7 +101,7 @@ func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (*cx509
 }
 
 /*
-transfer my CSR to x509 CSR
+把以我的Struct表述的 CSR 转化为 x509 package 定义的 CSR
 */
 func (csr *CertificateSigningRequest) toCX509CSR(signer crypto.Signer) *cx509.CertificateRequest {
 	cx509CSR := &cx509.CertificateRequest{

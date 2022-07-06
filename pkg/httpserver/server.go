@@ -101,6 +101,12 @@ func signCsrHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func signCsrRoutine(w http.ResponseWriter, csr *ca.CertificateSigningRequest) {
+	theCert, err := ca.CA.SignX509(csr)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "error happen: %v", err)
+	}
+
 	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprintf(w, "received")
+	fmt.Fprintf(w, "certificated is generated: %v", theCert.AuthorityKeyId)
 }
