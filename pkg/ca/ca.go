@@ -6,10 +6,17 @@ import (
 	"crypto/rsa"
 	cx509 "crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/pem"
+	"io/ioutil"
 	"log"
 	"math/big"
 	mathRand "math/rand"
 	"time"
+)
+
+const (
+	rsaPrivateKeyLocation string = "cert\\private\\ca.private.key"
+	rsaPrivateKeyPassword string = "123456"
 )
 
 var CA CertificateAuthority
@@ -21,7 +28,7 @@ func init() {
 
 type CertificateAuthority struct {
 	RootCA     cx509.Certificate
-	PrivateKey rsa.PrivateKey
+	PrivateKey *rsa.PrivateKey
 }
 
 /*
@@ -29,10 +36,24 @@ load ca data
 */
 func (ca *CertificateAuthority) load() {
 	//TODO
-	// if ca.PrivateKey ==  nil {
-	// 	ca.PrivateKey, _ = rsa.GenerateKey(rand.Reader, 1024)
-	// }
-	// ca.PrivateKey.PublicKey
+	bytes, err := ioutil.ReadFile(rsaPrivateKeyLocation)
+	if err != nil {
+		panic("can't load ca private key")
+	}
+	pemBlocks, _ := pem.Decode(bytes)
+	if pemBlocks.Type != "RSA PRIVATE KEY" {
+		panic("ca private key type should be rsa")
+	}
+	pemBytes, err := cx509.DecryptPEMBlock(pemBlocks, []byte(rsaPrivateKeyPassword))
+	if err != nil {
+		panic("decrept private key pem block fail")
+	}
+	privateKey, err := cx509.ParsePKCS1PrivateKey(pemBytes)
+	if err != nil {
+		panic("parse private key pem bytes fail")
+	}
+	ca.PrivateKey = privateKey
+
 }
 
 /*
