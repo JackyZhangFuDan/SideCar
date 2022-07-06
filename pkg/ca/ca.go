@@ -41,8 +41,8 @@ func (ca *CertificateAuthority) load() {
 		panic("can't load ca private key")
 	}
 	pemBlocks, _ := pem.Decode(bytes)
-	if pemBlocks.Type != "RSA PRIVATE KEY" {
-		panic("ca private key type should be rsa")
+	if pemBlocks.Type != "ENCRYPTED PRIVATE KEY" {
+		panic("ca private key type should be ENCRYPTED")
 	}
 	pemBytes, err := cx509.DecryptPEMBlock(pemBlocks, []byte(rsaPrivateKeyPassword))
 	if err != nil {
