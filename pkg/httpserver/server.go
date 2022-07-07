@@ -33,7 +33,7 @@ func Run() {
 	running = true
 	if server.ListenAndServe() != nil {
 		running = false
-		log.Fatal("can't start http server @ 8111")
+		log.Print("can't start http server @ 8111")
 	}
 	running = false
 }
@@ -54,16 +54,14 @@ func getCsrTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	csr := ca.CertificateSigningRequest{
-		SubjectCountry:            []string{"China", "US"},
-		SubjectOrganization:       []string{"Qinghua", "Beida"},
-		SubjectOrganizationalUnit: []string{"ComputerScience", "Mathematics"},
-		SubjectProvince:           []string{"Shanghai"},
-		SubjectLocality:           []string{"上海"},
+		SubjectCountry:            []string{"China"},
+		SubjectOrganization:       []string{"Qinghua"},
+		SubjectOrganizationalUnit: []string{"ComputerScience"},
+		SubjectProvince:           []string{"Beijing"},
+		SubjectLocality:           []string{"北京"},
 
-		PublicKeyAlg:       1,
-		SignatureAlgorithm: 4,
-		SubjectCommonName:  "www.fudan.edu.cn",
-		EmailAddresses:     []string{"ex@example.com"},
+		SubjectCommonName: "www.tsinghua.edu.cn",
+		EmailAddresses:    []string{"ex@example.com"},
 	}
 
 	csrBytes, err := json.Marshal(csr)
@@ -96,17 +94,25 @@ func signCsrHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go signCsrRoutine(w, csr)
+	var sync chan int = make(chan int, 1)
+	go signCsrRoutine(w, csr, sync)
 
+	<-sync
 }
 
-func signCsrRoutine(w http.ResponseWriter, csr *ca.CertificateSigningRequest) {
+func signCsrRoutine(w http.ResponseWriter, csr *ca.CertificateSigningRequest, sync chan<- int) {
+	defer close(sync)
 	theCert, err := ca.CA.SignX509(csr)
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "error happen: %v", err)
+		return
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprintf(w, "certificated is generated: %v", theCert.AuthorityKeyId)
+	w.Header().Add("Content-Type", "application/json")
+	jsonByte, _ := json.Marshal(theCert)
+	w.Write(jsonByte)
+
 }

@@ -52,4 +52,5 @@ type Extension struct {
 }
 
 type Certificate struct {
+	ID string `json:"certificateId" `
 }
