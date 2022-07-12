@@ -10,6 +10,10 @@ import (
 	"github.com/jackyzhangfudan/sidecar/pkg/ca"
 )
 
+const (
+	port int32 = 8111
+)
+
 var server *http.Server
 var running bool
 
@@ -26,14 +30,15 @@ func Run() {
 	mux.HandleFunc("/csr-template", getCsrTemplateHandler)
 	mux.HandleFunc("/csr", signCsrHandler)
 	server = &http.Server{
-		Addr:    ":8111",
+		Addr:    fmt.Sprintf(":%v", port),
 		Handler: mux,
 	}
 
 	running = true
+	fmt.Printf("server listening at %v, http", server.Addr)
 	if server.ListenAndServe() != nil {
 		running = false
-		log.Print("can't start http server @ 8111")
+		log.Printf("can't start http server at %v", server.Addr)
 	}
 	running = false
 }

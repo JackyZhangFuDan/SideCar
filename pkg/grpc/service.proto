@@ -1,0 +1,39 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/jackyzhangfudan/sidecar/grpc";
+
+package grpc;
+
+message CertificateSigningRequest {
+    repeated string SubjectCountry = 1;
+	repeated string SubjectOrganization  = 2;
+	repeated string SubjectOrganizationalUnit = 3;
+	repeated string SubjectLocality = 4;
+	repeated string SubjectProvince = 5;
+	repeated string SubjectStreetAddress = 6;
+	repeated string SubjectPostalCode = 7;
+	string SubjectSerialNumber = 8;
+	string SubjectCommonName = 9;
+	repeated string DNSNames = 10;
+	repeated string EmailAddresses = 11;
+}
+
+message SignResponse {
+    string CertificateId = 1;
+}
+
+message FileIdentifer {
+    string Id = 1;
+}
+
+message FileStream {
+    bytes contents = 1;
+}
+
+service CertificateService {
+    rpc CsrTemplate(google.protobuf.Empty) returns (CertificateSigningRequest){}
+    rpc SignCsr(CertificateSigningRequest) returns (SignResponse){}
+    rpc GetCert(FileIdentifer) returns (FileStream) {}
+    rpc getKey(FileIdentifer) returns (FileStream) {}
+}

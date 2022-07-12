@@ -194,6 +194,28 @@ func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (*Certi
 }
 
 /*
+return the generated client certificate file
+*/
+func (ca *CertificateAuthority) GetCertFile(id string) ([]byte, error) {
+	contents, err := os.ReadFile(clientCAFolder + "/" + id + ".crt")
+	if err != nil {
+		return nil, err
+	}
+	return contents, nil
+}
+
+/*
+return the generated client key file
+*/
+func (ca *CertificateAuthority) GetKeyFile(id string) ([]byte, error) {
+	contents, err := os.ReadFile(clientCAFolder + "/" + id + ".key")
+	if err != nil {
+		return nil, err
+	}
+	return contents, nil
+}
+
+/*
 把以我的Struct表述的 CSR 转化为 x509 package 定义的 CSR
 x509包支持的csr属性都在这里了，不支持的没有包含
 */
