@@ -21,6 +21,8 @@ var grpcclientCmd = &cobra.Command{
 	},
 }
 
+var certId *string
+
 func init() {
 	rootCmd.AddCommand(grpcclientCmd)
 
@@ -32,9 +34,10 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// grpcclientCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	certId = grpcclientCmd.Flags().String("certid", "", "id of the client certificate")
+	grpcclientCmd.MarkFlagRequired("certid")
 }
 
 func Run() {
-	myclient.Run()
+	myclient.Run(*certId)
 }

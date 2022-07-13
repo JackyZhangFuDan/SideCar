@@ -19,9 +19,7 @@ const (
 	port int32 = 8112
 )
 
-var clientCertId string
-
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
+func loadTLSCredentials(clientId string) (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
 	rootCAFile, err := ioutil.ReadFile("cert/rootCA/root.crt")
 	if err != nil {
@@ -34,7 +32,7 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair("cert/clientCert/"+clientCertId+".crt", "cert/clientCert/"+clientCertId+".key")
+	clientCert, err := tls.LoadX509KeyPair("cert/clientCert/"+clientId+".crt", "cert/clientCert/"+clientId+".key")
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +46,14 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	return credentials.NewTLS(config), nil
 }
 
-func Run() {
-	tlsCredentials, err := loadTLSCredentials()
+func Run(clientId string) {
+	tlsCredentials, err := loadTLSCredentials(clientId)
 	if err != nil {
 		log.Print("cannot load TLS credentials: ", err)
 		return
 	}
 
-	cc1, err := googlerpc.Dial(fmt.Sprint(":%d", port), googlerpc.WithTransportCredentials(tlsCredentials))
+	cc1, err := googlerpc.Dial(fmt.Sprintf(":%v", port), googlerpc.WithTransportCredentials(tlsCredentials))
 	if err != nil {
 		log.Print("cannot dial server: ", err)
 		return
