@@ -27,22 +27,18 @@ type CertificateSigningRequest struct {
 	PublicKeyAlg       x509.PublicKeyAlgorithm //public key的生成算法：rsa，ecdsa，dsa
 	SignatureAlgorithm x509.SignatureAlgorithm //签名算法，int
 
+	//一下四个属性会构成证书中的SANs
 	DNSNames       []string
 	EmailAddresses []string
 	IPAddresses    []net.IP
 	URIs           []url.URL
-	SANs           []SubjectAlternativeName
-	Extensions     []Extension
+
+	Extensions []Extension
 }
 
 type DistinguishedName struct {
 	Type  asn1.ObjectIdentifier
 	Value interface{}
-}
-
-type SubjectAlternativeName struct {
-	Type  string
-	Value string
 }
 
 type Extension struct {

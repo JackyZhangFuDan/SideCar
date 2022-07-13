@@ -5,8 +5,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	myclient "github.com/jackyzhangfudan/sidecar/pkg/grpc/client"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +15,7 @@ var grpcclientCmd = &cobra.Command{
 	Short: "start a gRPC client",
 	Long:  `Start a gRPC client to execute gRPC call`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("grpcclient called")
+		Run()
 	},
 }
 

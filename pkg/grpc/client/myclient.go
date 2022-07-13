@@ -40,6 +40,7 @@ func loadTLSCredentials(clientId string) (credentials.TransportCredentials, erro
 	// Create the credentials and return it
 	config := &tls.Config{
 		Certificates: []tls.Certificate{clientCert},
+		ServerName:   "localhost", //server 必须是对应的这个值
 		RootCAs:      certPool,
 	}
 
@@ -58,10 +59,17 @@ func Run(clientId string) {
 		log.Print("cannot dial server: ", err)
 		return
 	}
+	defer cc1.Close()
 
 	rpcClient := mygrpc.NewCertificateServiceClient(cc1)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	rpcClient.CsrTemplate(ctx, &emptypb.Empty{})
+	template, err := rpcClient.CsrTemplate(ctx, &emptypb.Empty{})
+	if err != nil {
+		log.Print("error happen when call gRPC client:" + err.Error())
+		return
+	}
+
+	fmt.Print(template)
 }

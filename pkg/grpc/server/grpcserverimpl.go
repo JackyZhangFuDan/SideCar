@@ -34,8 +34,9 @@ func (s *certificateServiceServer) CsrTemplate(context.Context, *emptypb.Empty) 
 		SubjectProvince:           []string{"Beijing"},
 		SubjectLocality:           []string{"北京"},
 
-		SubjectCommonName: "www.tsinghua.edu.cn",
+		SubjectCommonName: "tsinghua.edu.cn",
 		EmailAddresses:    []string{"ex@example.com"},
+		DNSNames:          []string{"localhost"},
 	}
 	return csr, nil
 }

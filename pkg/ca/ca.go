@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	rsaPrivateKeyLocation string = rootCAFolder + "/ca.private.key"
+	rsaPrivateKeyLocation string = rootCAFolder + "/root.private.key"
 	//rsaPrivateKeyPassword string = "123456"
 	rootCALocation string = rootCAFolder + "/root.crt"
 
@@ -117,7 +117,9 @@ func (ca *CertificateAuthority) makeRootCA() error {
 			PostalCode:         []string{"200201"},
 			CommonName:         "Fudan CA",
 		},
+
 		EmailAddresses: []string{"jacky01.zhang@outlook.com"},
+		DNSNames:       []string{"localhost"},
 
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
@@ -158,10 +160,11 @@ func (ca *CertificateAuthority) signLocalCert() error {
 		SubjectOrganization:       []string{"Fudan"},
 		SubjectOrganizationalUnit: []string{"ComputerScience"},
 		SubjectProvince:           []string{"Shanghai"},
-		//SubjectLocality:           []string{"上海"},
+		SubjectLocality:           []string{"上海"},
 
 		SubjectCommonName: "localhost", //这里需要填写所在Server的实际域名，但我们这里没有
 		EmailAddresses:    []string{"jacky01.zhang@outlook.com"},
+		DNSNames:          []string{"localhost"},
 	}
 
 	cert, err := ca.SignX509(csr)
@@ -205,11 +208,13 @@ func (ca *CertificateAuthority) SignX509(csr *CertificateSigningRequest) (*Certi
 		PublicKey:          cx509CSR.PublicKey,
 		PublicKeyAlgorithm: cx509CSR.PublicKeyAlgorithm,
 		Subject:            cx509CSR.Subject,
-		URIs:               cx509CSR.URIs,
-		DNSNames:           cx509CSR.DNSNames,
-		Extensions:         cx509CSR.Extensions,
-		EmailAddresses:     cx509CSR.EmailAddresses,
-		IPAddresses:        cx509CSR.IPAddresses,
+
+		URIs:           cx509CSR.URIs,
+		DNSNames:       cx509CSR.DNSNames,
+		EmailAddresses: cx509CSR.EmailAddresses,
+		IPAddresses:    cx509CSR.IPAddresses,
+
+		Extensions: cx509CSR.Extensions,
 
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(1, 0, 0),
@@ -272,10 +277,16 @@ x509包支持的csr属性都在这里了，不支持的没有包含
 func (csr *CertificateSigningRequest) toCX509CSR(signer crypto.Signer) *cx509.CertificateRequest {
 	cx509CSR := &cx509.CertificateRequest{
 		SignatureAlgorithm: csr.SignatureAlgorithm,
-		DNSNames:           csr.DNSNames,
-		EmailAddresses:     csr.EmailAddresses,
-		IPAddresses:        csr.IPAddresses,
+
+		//一下属性，加上uris，会形成subject alternative names
+		DNSNames:       csr.DNSNames,
+		EmailAddresses: csr.EmailAddresses,
+		IPAddresses:    csr.IPAddresses,
 	}
+	for _, uri := range csr.URIs {
+		cx509CSR.URIs = append(cx509CSR.URIs, &uri)
+	}
+
 	cx509CSR.Subject.CommonName = csr.SubjectCommonName
 	cx509CSR.Subject.Country = csr.SubjectCountry
 	cx509CSR.Subject.Province = csr.SubjectProvince
@@ -284,10 +295,6 @@ func (csr *CertificateSigningRequest) toCX509CSR(signer crypto.Signer) *cx509.Ce
 	cx509CSR.Subject.Locality = csr.SubjectLocality
 	cx509CSR.Subject.Organization = csr.SubjectOrganization
 	cx509CSR.Subject.OrganizationalUnit = csr.SubjectOrganizationalUnit
-
-	for _, uri := range csr.URIs {
-		cx509CSR.URIs = append(cx509CSR.URIs, &uri)
-	}
 
 	for _, ex := range csr.Extensions {
 		cx509CSR.Extensions = append(cx509CSR.Extensions, pkix.Extension{

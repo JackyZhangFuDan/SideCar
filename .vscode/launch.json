@@ -5,12 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
+            "name": "Launch Server",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "main.go",
             "args": ["--grpc=true","--mtls=true"]
+        },
+        {
+            "name": "Launch Client",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "main.go",
+            "args": ["grpcclient","--certid=2022-07-13_20-12-39"]
         }
     ]
 }

@@ -65,8 +65,9 @@ func getCsrTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		SubjectProvince:           []string{"Beijing"},
 		SubjectLocality:           []string{"北京"},
 
-		SubjectCommonName: "www.tsinghua.edu.cn",
+		SubjectCommonName: "tsinghua.edu.cn",
 		EmailAddresses:    []string{"ex@example.com"},
+		DNSNames:          []string{"localhost"},
 	}
 
 	csrBytes, err := json.Marshal(csr)
