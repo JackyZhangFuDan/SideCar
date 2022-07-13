@@ -18,12 +18,17 @@ import (
 )
 
 const (
-	rsaPrivateKeyLocation string = rootCAFolder + "/ca.private.key"
+	rsaPrivateKeyLocation string = rootCAFolder + "/root.private.key"
 	rsaPrivateKeyPassword string = "123456"
 	rootCALocation        string = rootCAFolder + "/root.crt"
 
+	localKeyLocation        string = localCAFolder + "/local.private.key"
+	localCertLocation       string = localCAFolder + "/local.crt"
+	localPrivateKeyPassword string = "123456"
+
 	rootCAFolder   string = "cert/rootCA"
-	clientCAFolder string = "cert/clientCA"
+	clientCAFolder string = "cert/clientCert"
+	localCAFolder  string = "cert/localCert"
 )
 
 var CA CertificateAuthority
@@ -48,6 +53,9 @@ func (ca *CertificateAuthority) load() {
 			log.Print("can't create self-signed root CA")
 			return
 		}
+		//我们需要同时签发本地server的certificate，用于后续的mTLS
+		os.Remove(localCertLocation)
+		os.Remove(localKeyLocation)
 	}
 
 	//加载 rootCA 的 private key
@@ -75,6 +83,14 @@ func (ca *CertificateAuthority) load() {
 		panic("can't parse root ca")
 	}
 	ca.RootCA = *rootCA
+
+	//我们检查是否需要生成本地server的certificate
+	if !checkFileExist(localCertLocation) || !checkFileExist(localKeyLocation) {
+		if err := ca.signLocalCert(); err != nil {
+			log.Print("can't create local certificate")
+			return
+		}
+	}
 }
 
 /*
@@ -124,9 +140,43 @@ func (ca *CertificateAuthority) makeRootCA() error {
 		log.Print("marshal ca private key fail")
 		return err
 	}
-	err = saveToPEM(buf, rootCAFolder, "ca.private.key", "ENCRYPTED PRIVATE KEY")
+	err = saveToPEM(buf, rootCAFolder, "root.private.key", "ENCRYPTED PRIVATE KEY")
 	if err != nil {
 		log.Print("persistent the root ca private key fail")
+		return err
+	}
+
+	return nil
+}
+
+/*
+用CA自己的根证书，为自己签发一张证书，用于和客户端做mTLS
+*/
+func (ca *CertificateAuthority) signLocalCert() error {
+	csr := &CertificateSigningRequest{
+		SubjectCountry:            []string{"China"},
+		SubjectOrganization:       []string{"Fudan"},
+		SubjectOrganizationalUnit: []string{"ComputerScience"},
+		SubjectProvince:           []string{"Shanghai"},
+		//SubjectLocality:           []string{"上海"},
+
+		SubjectCommonName: "localhost", //这里需要填写所在Server的实际域名，但我们这里没有
+		EmailAddresses:    []string{"jacky01.zhang@outlook.com"},
+	}
+
+	cert, err := ca.SignX509(csr)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(clientCAFolder+"/"+cert.ID+".crt", localCertLocation)
+	if err != nil {
+		log.Print("move local cert file fail")
+		return err
+	}
+	err = os.Rename(clientCAFolder+"/"+cert.ID+".key", localKeyLocation)
+	if err != nil {
+		log.Print("move local key file fail")
 		return err
 	}
 

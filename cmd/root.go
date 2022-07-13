@@ -25,6 +25,7 @@ var rootCmd = &cobra.Command{
 }
 
 var useGRPC *bool
+var useMTLS *bool
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -46,6 +47,7 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	useGRPC = rootCmd.Flags().Bool("grpc", true, "enable the gRPC instead of http1.1")
+	useMTLS = rootCmd.Flags().Bool("mtls", true, "enable the mtls for gRPC, no effect when don't use gRPC")
 }
 
 /*
@@ -53,7 +55,7 @@ start the http server
 */
 func startServer() {
 	if *useGRPC {
-		grpcserver.Run()
+		grpcserver.Run(*useMTLS)
 	} else {
 		httpserver.Run()
 	}

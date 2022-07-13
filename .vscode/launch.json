@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "main.go",
-            "args": ["--grpc=true"]
+            "args": ["--grpc=true","--mtls=true"]
         }
     ]
 }

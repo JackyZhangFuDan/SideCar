@@ -1,12 +1,16 @@
 package server
 
 import (
+	"crypto/tls"
+	cx509 "crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 
 	mygrpc "github.com/jackyzhangfudan/sidecar/pkg/grpc"
 	googlegrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 const (
@@ -18,16 +22,54 @@ var server *certificateServiceServer = &certificateServiceServer{}
 /*
 Start gRPC server to accept certificate related request
 */
-func Run() {
+func Run(enableMTls bool) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := googlegrpc.NewServer()
+	var s *googlegrpc.Server
+	if enableMTls {
+		tlsCre, err := createTLSCredentials()
+		if err != nil {
+			return
+		}
+		s = googlegrpc.NewServer(googlegrpc.Creds(tlsCre))
+	} else {
+		s = googlegrpc.NewServer()
+	}
 	mygrpc.RegisterCertificateServiceServer(s, server)
 	log.Printf("server listening at %v, gRpc", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+/*
+we create the mTLS settings for server
+*/
+func createTLSCredentials() (credentials.TransportCredentials, error) {
+	caPEMFile, err := ioutil.ReadFile("cert/rootCA/root.crt") //both local and client's certificate are signed by same CA
+	if err != nil {
+		return nil, err
+	}
+
+	caPool := cx509.NewCertPool()
+	if !caPool.AppendCertsFromPEM(caPEMFile) {
+		return nil, &ServerError{msg: "load local cert fail"}
+	}
+
+	localCert, err := tls.LoadX509KeyPair("cert/localCert/local.crt", "cert/localCert/local.private.key")
+	if err != nil {
+		log.Print("load local certificate and key file fail")
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{localCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert, //means mTLS, will check client's certificate
+		ClientCAs:    caPool,
+	}
+
+	return credentials.NewTLS(config), nil
 }
