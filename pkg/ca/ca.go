@@ -19,8 +19,8 @@ import (
 
 const (
 	rsaPrivateKeyLocation string = rootCAFolder + "/ca.private.key"
-	rsaPrivateKeyPassword string = "123456"
-	rootCALocation        string = rootCAFolder + "/root.crt"
+	//rsaPrivateKeyPassword string = "123456"
+	rootCALocation string = rootCAFolder + "/root.crt"
 
 	rootCAFolder   string = "cert/rootCA"
 	clientCAFolder string = "cert/clientCA"
@@ -59,7 +59,7 @@ func (ca *CertificateAuthority) load() {
 	if pemBlocks.Type != "ENCRYPTED PRIVATE KEY" {
 		panic("ca private key type should be ENCRYPTED")
 	}
-	data, err := pkcs8.ParsePKCS8PrivateKeyRSA(pemBlocks.Bytes, []byte(rsaPrivateKeyPassword)) //need package pkcs8 to parse
+	data, err := pkcs8.ParsePKCS8PrivateKeyRSA(pemBlocks.Bytes) //need package pkcs8 to parse
 	if err != nil {
 		panic("can't parse private key bytes via pkcs8")
 	}
@@ -119,7 +119,7 @@ func (ca *CertificateAuthority) makeRootCA() error {
 		return err
 	}
 
-	buf, err = pkcs8.MarshalPrivateKey(privateKey, []byte(rsaPrivateKeyPassword), nil)
+	buf, err = pkcs8.MarshalPrivateKey(privateKey, nil, nil)
 	if err != nil {
 		log.Print("marshal ca private key fail")
 		return err
@@ -226,6 +226,7 @@ func (csr *CertificateSigningRequest) toCX509CSR(signer crypto.Signer) *cx509.Ce
 		EmailAddresses:     csr.EmailAddresses,
 		IPAddresses:        csr.IPAddresses,
 	}
+	cx509CSR.Subject.CommonName = csr.SubjectCommonName
 	cx509CSR.Subject.Country = csr.SubjectCountry
 	cx509CSR.Subject.Province = csr.SubjectProvince
 	cx509CSR.Subject.StreetAddress = csr.SubjectStreetAddress
