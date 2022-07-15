@@ -47,9 +47,13 @@ func Run(enableMTls bool) {
 
 /*
 we create the mTLS settings for server
+we expect mTLS is enable between grpc client and server.
+
+NOTE: following implementation is just for technical verification, isn't suitable for production,
+because we use CA's root certificate as gRPC client and server's trust root certificate, there is a logic circle
 */
 func createTLSCredentials() (credentials.TransportCredentials, error) {
-	caPEMFile, err := ioutil.ReadFile("cert/rootCA/root.crt") //both local and client's certificate are signed by same CA
+	caPEMFile, err := ioutil.ReadFile("cert/rootCA/root.crt") //assume both grpc server and client's certificate are signed by same CA
 	if err != nil {
 		return nil, err
 	}

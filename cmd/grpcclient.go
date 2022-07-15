@@ -12,8 +12,8 @@ import (
 // grpcclientCmd represents the grpcclient command
 var grpcclientCmd = &cobra.Command{
 	Use:   "grpcclient",
-	Short: "start a gRPC client",
-	Long:  `Start a gRPC client to execute gRPC call`,
+	Short: "start a gRPC client to test CA web server",
+	Long:  `Start a gRPC client to execute a test-call on CA web server, the server should running in gRPC mode, not http mode`,
 	Run: func(cmd *cobra.Command, args []string) {
 		Run()
 	},
@@ -32,7 +32,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	certId = grpcclientCmd.Flags().String("certid", "", "id of the client certificate")
+	certId = grpcclientCmd.LocalFlags().String("certid", "", "id of the client certificate")
 	grpcclientCmd.MarkFlagRequired("certid")
 }
 

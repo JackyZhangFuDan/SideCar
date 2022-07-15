@@ -323,6 +323,7 @@ func (csr *CertificateSigningRequest) toCX509CSR(signer crypto.Signer) *cx509.Ce
 */
 func saveToPEM(bytes []byte, folder string, fileName string, fileType string) error {
 	file, err := os.Create(folder + "/" + fileName)
+	defer file.Close()
 	if err != nil {
 		return err
 	}

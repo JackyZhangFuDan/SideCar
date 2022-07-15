@@ -7,25 +7,20 @@ package cmd
 import (
 	"os"
 
-	grpcserver "github.com/jackyzhangfudan/sidecar/pkg/grpc/server"
-	"github.com/jackyzhangfudan/sidecar/pkg/httpserver"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "sidecar",
-	Short: "",
-	Long:  ``,
+	Short: "My SideCar",
+	Long:  `Introduce tools can be deployed to side cars`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		startServer()
+
 	},
 }
-
-var useGRPC *bool
-var useMTLS *bool
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -46,17 +41,5 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	useGRPC = rootCmd.Flags().Bool("grpc", true, "enable the gRPC instead of http1.1")
-	useMTLS = rootCmd.Flags().Bool("mtls", true, "enable the mtls for gRPC, no effect when don't use gRPC")
-}
 
-/*
-start the http server
-*/
-func startServer() {
-	if *useGRPC {
-		grpcserver.Run(*useMTLS)
-	} else {
-		httpserver.Run()
-	}
 }

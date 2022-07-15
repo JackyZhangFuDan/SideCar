@@ -19,7 +19,7 @@ const (
 	port int32 = 8112
 )
 
-func loadTLSCredentials(clientId string) (credentials.TransportCredentials, error) {
+func createTLSCredentials(clientId string) (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
 	rootCAFile, err := ioutil.ReadFile("cert/rootCA/root.crt")
 	if err != nil {
@@ -48,7 +48,7 @@ func loadTLSCredentials(clientId string) (credentials.TransportCredentials, erro
 }
 
 func Run(clientId string) {
-	tlsCredentials, err := loadTLSCredentials(clientId)
+	tlsCredentials, err := createTLSCredentials(clientId)
 	if err != nil {
 		log.Print("cannot load TLS credentials: ", err)
 		return
