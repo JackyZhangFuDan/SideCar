@@ -9,6 +9,7 @@ import (
 
 	grpcserver "github.com/jackyzhangfudan/sidecar/pkg/grpc/server"
 	"github.com/jackyzhangfudan/sidecar/pkg/httpserver"
+	"github.com/jackyzhangfudan/sidecar/pkg/util"
 )
 
 // caserverCmd represents the caserver command
@@ -45,7 +46,7 @@ start the http server
 */
 func startServer() {
 	if *useGRPC {
-		grpcserver.Run(*useMTLS)
+		grpcserver.Run(*useMTLS, util.Shutdown())
 	} else {
 		httpserver.Run()
 	}
