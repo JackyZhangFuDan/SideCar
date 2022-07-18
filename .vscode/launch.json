@@ -13,7 +13,7 @@
             "args": ["caserver","--grpc=true","--mtls=false"]
         },
         {
-            "name": "Launch Client",
+            "name": "A gRPC Test Client",
             "type": "go",
             "request": "launch",
             "mode": "auto",

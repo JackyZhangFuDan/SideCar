@@ -27,7 +27,7 @@ type CertificateSigningRequest struct {
 	PublicKeyAlg       x509.PublicKeyAlgorithm //public key的生成算法：rsa，ecdsa，dsa
 	SignatureAlgorithm x509.SignatureAlgorithm //签名算法，int
 
-	//一下四个属性会构成证书中的SANs
+	//以下四个属性会构成证书中的SANs
 	DNSNames       []string
 	EmailAddresses []string
 	IPAddresses    []net.IP

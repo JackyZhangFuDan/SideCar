@@ -13,7 +13,8 @@ import (
 var grpcclientCmd = &cobra.Command{
 	Use:   "grpcclient",
 	Short: "start a gRPC client to test CA web server",
-	Long:  `Start a gRPC client to execute a test-call on CA web server, the server should running in gRPC mode, not http mode`,
+	Long: `Start a gRPC client to execute a test-call on CA web server, the server should running in gRPC mode - not http mode，
+	and must enable the mTLS`,
 	Run: func(cmd *cobra.Command, args []string) {
 		Run()
 	},
