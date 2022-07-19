@@ -3,6 +3,9 @@ package server
 import (
 	"context"
 	"log"
+	"net"
+	"strconv"
+	"strings"
 
 	"github.com/jackyzhangfudan/sidecar/pkg/ca"
 	mygrpc "github.com/jackyzhangfudan/sidecar/pkg/grpc"
@@ -37,7 +40,9 @@ func (s *certificateServiceServer) CsrTemplate(context.Context, *emptypb.Empty) 
 		SubjectCommonName: "tsinghua.edu.cn",
 		EmailAddresses:    []string{"ex@example.com"},
 		DNSNames:          []string{"localhost"},
+		IPAddresses:       []string{"0.0.0.0", "127.0.0.1"},
 	}
+
 	return csr, nil
 }
 
@@ -50,6 +55,7 @@ func (s *certificateServiceServer) SignCsr(ctx context.Context, csrReq *mygrpc.C
 	csr.DNSNames = csrReq.DNSNames
 	csr.EmailAddresses = csrReq.EmailAddresses
 	csr.SubjectCommonName = csrReq.SubjectCommonName
+
 	csr.SubjectCountry = csrReq.SubjectCountry
 	csr.SubjectLocality = csrReq.SubjectLocality
 	csr.SubjectOrganization = csrReq.SubjectOrganization
@@ -58,6 +64,25 @@ func (s *certificateServiceServer) SignCsr(ctx context.Context, csrReq *mygrpc.C
 	csr.SubjectProvince = csrReq.SubjectProvince
 	csr.SubjectSerialNumber = csrReq.SubjectSerialNumber
 	csr.SubjectStreetAddress = csrReq.SubjectStreetAddress
+
+	for _, ipStr := range csrReq.IPAddresses {
+		ips := strings.Split(ipStr, ".")
+		if len(ips) != 4 {
+			continue
+		}
+		var ip net.IP
+		for _, ele := range ips {
+			v, err := strconv.ParseUint(ele, 10, 8)
+			if err != nil {
+				continue
+			}
+			ip = append(ip, byte(v))
+		}
+		if len(ip) != 4 {
+			continue
+		}
+		csr.IPAddresses = append(csr.IPAddresses, ip)
+	}
 
 	theCert, err := ca.CA.SignX509(csr)
 

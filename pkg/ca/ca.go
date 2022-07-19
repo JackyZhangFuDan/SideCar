@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/big"
 	mathRand "math/rand"
+	"net"
 	"os"
 	"time"
 
@@ -165,6 +166,7 @@ func (ca *CertificateAuthority) signLocalCert() error {
 		SubjectCommonName: "localhost", //这里需要填写所在Server的实际域名，但我们这里没有
 		EmailAddresses:    []string{"jacky01.zhang@outlook.com"},
 		DNSNames:          []string{"localhost"},
+		IPAddresses:       []net.IP{[]uint8{0, 0, 0, 0}},
 	}
 
 	cert, err := ca.SignX509(csr)

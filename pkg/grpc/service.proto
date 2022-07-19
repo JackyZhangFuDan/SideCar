@@ -17,6 +17,7 @@ message CertificateSigningRequest {
 	string SubjectCommonName = 9;
 	repeated string DNSNames = 10;
 	repeated string EmailAddresses = 11;
+	repeated string  IPAddresses = 12;
 }
 
 message SignResponse {
@@ -35,5 +36,5 @@ service CertificateService {
     rpc CsrTemplate(google.protobuf.Empty) returns (CertificateSigningRequest){}
     rpc SignCsr(CertificateSigningRequest) returns (SignResponse){}
     rpc GetCert(FileIdentifer) returns (FileStream) {}
-    rpc getKey(FileIdentifer) returns (FileStream) {}
+    rpc GetKey(FileIdentifer) returns (FileStream) {}
 }

@@ -66,7 +66,7 @@ func (c *certificateServiceClient) GetCert(ctx context.Context, in *FileIdentife
 
 func (c *certificateServiceClient) GetKey(ctx context.Context, in *FileIdentifer, opts ...grpc.CallOption) (*FileStream, error) {
 	out := new(FileStream)
-	err := c.cc.Invoke(ctx, "/grpc.CertificateService/getKey", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.CertificateService/GetKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func _CertificateService_GetKey_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.CertificateService/getKey",
+		FullMethod: "/grpc.CertificateService/GetKey",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CertificateServiceServer).GetKey(ctx, req.(*FileIdentifer))
@@ -205,7 +205,7 @@ var CertificateService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CertificateService_GetCert_Handler,
 		},
 		{
-			MethodName: "getKey",
+			MethodName: "GetKey",
 			Handler:    _CertificateService_GetKey_Handler,
 		},
 	},
